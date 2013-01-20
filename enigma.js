@@ -109,13 +109,13 @@ var ImageCache = {
      * Prefetches all the images.
      */
     preFetch : function (callback) {
-        var update = this.collector(TileTypes.getCount(), callback);
-        for (image in this.images)
+        var update = ImageCache.collector(TileTypes.getCount(), callback);
+        for (image in ImageCache.images)
         {
-            imageName = this.images[image];
-            this[imageName] = new Image();
-            this[imageName].src = 'images/' + imageName + '.png';
-            this[imageName].addEventListener('load', update, false);
+            imageName = ImageCache.images[image];
+            ImageCache[imageName] = new Image();
+            ImageCache[imageName].src = 'images/' + imageName + '.png';
+            ImageCache[imageName].addEventListener('load', update);
         }
     },
 
@@ -123,12 +123,13 @@ var ImageCache = {
      * Get an image tag for a loaded image.
      */
     getImage : function (image) {
-        return this[image];
+        return ImageCache[image];
     }
 }
 
 /**
  * Object representing a tile.
+ * @constructor
  */
 var Tile = function (x, y, type) {
     // Position
@@ -142,17 +143,6 @@ var Tile = function (x, y, type) {
  * Moves the tile (according to the set dx and dy).
  */
 Tile.prototype.move = function () {
-    var nextTile = Enigma.getTileAt(this.x + this.dx, this.y + this.dy);
-    // Stop if we hit the wall or the edge of the map
-    // TODO: Make the player die when moving off the map
-    if (nextTile == false || nextTile.is(TileTypes.WALL))
-    {
-        this.dx = 0;
-        this.dy = 0;
-        Enigma.state = GameStates.WAITING;
-        return;
-    }
-
     var thisTile = Enigma.getTileAt(this.x, this.y);
     // Check if the current tile has an action attached to it
     switch (thisTile.type)
@@ -172,6 +162,18 @@ Tile.prototype.move = function () {
             Enigma.state = GameStates.WAITING;
             return;
     }
+    
+    var nextTile = Enigma.getTileAt(this.x + this.dx, this.y + this.dy);
+    // Stop if we hit the wall or the edge of the map
+    // TODO: Make the player die when moving off the map
+    if (nextTile == false || nextTile.is(TileTypes.WALL))
+    {
+        this.dx = 0;
+        this.dy = 0;
+        Enigma.state = GameStates.WAITING;
+        return;
+    }
+
     // Move
     this.x += this.dx;
     this.y += this.dy;
@@ -206,9 +208,8 @@ Tile.prototype.setDirection = function (direction) {
 Tile.prototype.draw = function () {
     var start_x = this.x * Enigma.TILE_SIZE,
         start_y = this.y * Enigma.TILE_SIZE + Enigma.TOP_OFFSET,
-    canvas = Enigma.canvas;
-    image = ImageCache.getImage(this.type);
-    canvas.drawImage(image, start_x, start_y);
+        image = ImageCache.getImage(this.type);
+    Enigma.canvas.drawImage(image, start_x, start_y);
 };
 
 /**
@@ -297,37 +298,37 @@ var Enigma = {
      */
     init : function () {
         // Calculate game constants
-        this.canvas = this.canvasElement.getContext('2d');
-        this.HEIGHT = this.canvasElement.attributes.height.value;
-        this.WIDTH = this.canvasElement.attributes.width.value;
-        this.tileCount.x = this.WIDTH / this.TILE_SIZE;
-        this.tileCount.y = (this.HEIGHT - this.TOP_OFFSET) / this.TILE_SIZE;
+        Enigma.canvas = Enigma.canvasElement.getContext('2d');
+        Enigma.HEIGHT = Enigma.canvasElement.attributes.height.value;
+        Enigma.WIDTH = Enigma.canvasElement.attributes.width.value;
+        Enigma.tileCount.x = Enigma.WIDTH / Enigma.TILE_SIZE;
+        Enigma.tileCount.y = (Enigma.HEIGHT - Enigma.TOP_OFFSET) / Enigma.TILE_SIZE;
 
         // Setup the game
-        this.loadLevel(Level);
-        this.drawMap(this.tiles);
-        this.state = GameStates.WAITING;
+        Enigma.loadLevel(Level);
+        Enigma.drawMap(Enigma.tiles);
+        Enigma.state = GameStates.WAITING;
     },
 
     /**
      * Loads a level into the game.
      */
     loadLevel : function (level) {
-        this.currentLevel = level.name;
-        this.tiles = this.parseLevel(level.tiles);
-        this.player = new Tile(
+        Enigma.currentLevel = level.name;
+        Enigma.tiles = Enigma.parseLevel(level.tiles);
+        Enigma.player = new Tile(
             level.player[0],
             level.player[1],
             TileTypes.PLAYER
         );
-        this.player.dx = 0;
-        this.player.dy = 0;
-        this.totalCoins = 0;
-        for (tile in this.tiles)
+        Enigma.player.dx = 0;
+        Enigma.player.dy = 0;
+        Enigma.totalCoins = 0;
+        for (tile in Enigma.tiles)
         {
-            if (this.tiles[tile].is(TileTypes.COIN))
+            if (Enigma.tiles[tile].is(TileTypes.COIN))
             {
-                ++this.totalCoins;
+                ++Enigma.totalCoins;
             }
         }
     },
@@ -336,11 +337,11 @@ var Enigma = {
      * Returns the tile at (x, y)-
      */
     getTileAt : function (x, y) {
-        for (tile in this.tiles)
+        for (tile in Enigma.tiles)
         {
-            if (this.tiles[tile].x == x && this.tiles[tile].y == y)
+            if (Enigma.tiles[tile].x == x && Enigma.tiles[tile].y == y)
             {
-                return this.tiles[tile];
+                return Enigma.tiles[tile];
             }
         }
         return false;
@@ -352,25 +353,25 @@ var Enigma = {
     drawMap : function (tiles) {
         for (tile in tiles)
         {
-            var thisTile = tiles[tile],
-                floor = new Tile(thisTile.x, thisTile.y, TileTypes.FLOOR);
+            var EnigmaTile = tiles[tile],
+                floor = new Tile(EnigmaTile.x, EnigmaTile.y, TileTypes.FLOOR);
             floor.draw();
             tiles[tile].draw();
         }
-        this.player.draw();
-        this.drawTitleBar();
+        Enigma.player.draw();
+        Enigma.drawTitleBar();
     },
 
     /**
      * Draw titlebar.
      */
     drawTitleBar : function () {
-        var score = this.score + '',
+        var score = Enigma.score + '',
             x = 0,
-            totalCoins = this.totalCoins + '',
-            currentLevel = this.currentLevel + '';
+            totalCoins = Enigma.totalCoins + '',
+            currentLevel = Enigma.currentLevel + '';
         // Draw background
-        for (i = 0; i < this.tileCount.x; i++)
+        for (i = 0; i < Enigma.tileCount.x; i++)
         {
             t = new Tile(i, -1, TileTypes.TITLEBAR);
             t.draw();
@@ -406,9 +407,9 @@ var Enigma = {
      */
     remainingCoins : function () {
         var coins = 0;
-        for (tile in this.tiles)
+        for (tile in Enigma.tiles)
         {
-            if (this.tiles[tile].type == TileTypes.COIN)
+            if (Enigma.tiles[tile].type == TileTypes.COIN)
             {
                 coins++;
             }
@@ -438,7 +439,7 @@ var Enigma = {
         event = e || window.event;
         for (key in Keys)
         {
-            if (event.keyCode == Keys[key] && event.keyCode != this.currentKey)
+            if (event.keyCode == Keys[key] && event.keyCode != Enigma.currentKey)
             {
                 Enigma.currentKey = Keys[key];
                 break;
@@ -465,13 +466,13 @@ var Enigma = {
             }
         }
         // Store them
-        this.tiles = tiles;
+        Enigma.tiles = tiles;
         // Put a floor tile on all remaining tiles
-        for (x = 0; x < this.tileCount.x; x++)
+        for (x = 0; x < Enigma.tileCount.x; x++)
         {
-            for (y = 0; y < this.tileCount.y; y++)
+            for (y = 0; y < Enigma.tileCount.y; y++)
             {
-                if (this.getTileAt(x, y) == false)
+                if (Enigma.getTileAt(x, y) == false)
                 {
                     tiles.push(new Tile(x, y, TileTypes.FLOOR));
                 }
@@ -484,9 +485,9 @@ var Enigma = {
      * Moves the player if he is in motion.
      */
     checkForMove : function () {
-        if (this.state == GameStates.MOVING)
+        if (Enigma.state == GameStates.MOVING)
         {
-            this.player.move(); 
+            Enigma.player.move(); 
         }
     },
 
@@ -494,10 +495,10 @@ var Enigma = {
      * Delegates keyboard inputs.
      */
     handleInput : function () {
-        if (this.currentKey != Keys.NONE && this.state == GameStates.WAITING)
+        if (Enigma.currentKey != Keys.NONE && Enigma.state == GameStates.WAITING)
         {
-            this.player.setDirection(this.currentKey);
-            this.state = GameStates.MOVING;
+            Enigma.player.setDirection(Enigma.currentKey);
+            Enigma.state = GameStates.MOVING;
         }
     },
 
@@ -511,18 +512,23 @@ var Enigma = {
             document.onkeydown = Enigma.keyDownListener;
             document.onkeyup = Enigma.keyUpListener;
         });
-        (function gameLoop(time) {
-            var fps = 1000 / (time - Enigma.timestamp);
-            Enigma.timestamp = time;
-            document.getElementById('fps').innerHTML = Math.floor(fps);
-            window.requestFrame(gameLoop);
-            if (Enigma.state !== GameStates.LOADING)
-            {
-                Enigma.checkForMove();
-                Enigma.handleInput();
-                Enigma.drawMap(Enigma.tiles);
-            }
-        })();
+        Enigma.gameLoop(+new Date());
+    },
+
+    /**
+     * Main game loop.
+     */
+     gameLoop : function (time) {
+        var fps = 1000 / (time - Enigma.timestamp);
+        Enigma.timestamp = time;
+        document.getElementById('fps').innerHTML = Math.floor(fps);
+        window.requestFrame(Enigma.gameLoop);
+        if (Enigma.state !== GameStates.LOADING)
+        {
+            Enigma.checkForMove();
+            Enigma.handleInput();
+            Enigma.drawMap(Enigma.tiles);
+        }
     }
 };
 
