@@ -95,11 +95,22 @@ Tile.prototype.move = function () {
         return;
     }
     var thisTile = Enigma.getTileAt(this.x, this.y);
-    if (thisTile.is(TileTypes.COIN))
+    switch (thisTile.type)
     {
-        console.log(++Enigma.score);
-        thisTile.type = TileTypes.FLOOR;
-        console.log(Enigma.remainingCoins());
+        case TileTypes.COIN:
+            console.log(++Enigma.score + '/' + Enigma.totalCoins);
+            thisTile.type = TileTypes.FLOOR;
+            if (Enigma.remainingCoins() == 0)
+            {
+                alert('Won!');
+                Enigma.state = GameStates.WAITING;
+                return;
+            }
+            break;
+        case TileTypes.HOLE:
+            alert('Dead!');
+            Enigma.state = GameStates.WAITING;
+            return;
     }
     this.x += this.dx;
     this.y += this.dy;
@@ -150,11 +161,10 @@ Level[TileTypes.WALL] = [
     [6, 6]
 ];
 Level[TileTypes.COIN] = [
-    [5, 4],
+    [11, 4],
     [0, 1],
     [6, 0]
 ];
-/*
 Level[TileTypes.HOLE] = [
     [1, 2],
     [2, 3],
@@ -163,9 +173,8 @@ Level[TileTypes.HOLE] = [
     [5, 6],
     [6, 7],
     [7, 8],
-    [8, 9]
+    [17, 9]
 ];
-*/
 Level[TileTypes.PLAYER] = [4, 3];
 var Enigma = {
     TILE_SIZE : 20,
@@ -176,6 +185,7 @@ var Enigma = {
     tileCount : [],
     currentKey : Keys.NONE,
     score : 0,
+    totalCoins: 0,
     init : function () {
         this.canvas = this.canvasElement.getContext('2d');
         this.HEIGHT = this.canvasElement.attributes.height.value;
@@ -188,6 +198,14 @@ var Enigma = {
             Level[TileTypes.PLAYER][1],
             TileTypes.PLAYER
         );
+        this.totalCoins = 0;
+        for (tile in this.tiles)
+        {
+            if (this.tiles[tile].is(TileTypes.COIN))
+            {
+                ++this.totalCoins;
+            }
+        }
         this.drawMap(this.tiles);
         this.state = GameStates.WAITING;
     },
