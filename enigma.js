@@ -1,4 +1,40 @@
-window.requestAnimFrame = (function () {
+/**
+ * Enums
+ */
+var Keys = {
+    LEFT : 37,
+    UP : 38,
+    RIGHT : 39,
+    DOWN : 40,
+    NONE : 'none'
+};
+var TileTypes = {
+    FLOOR : 'floor',
+    WALL : 'wall',
+    HOLE : 'hole',
+    PLAYER : 'player',
+    COIN : 'coin',
+    getCount : function () {
+        var count = 0;
+        for (item in TileTypes)
+        {
+            if (TileTypes.hasOwnProperty(item) && typeof TileTypes[item] == 'string')
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+};
+var GameStates = {
+    LOADING : 0,
+    WAITING : 1,
+    MOVING : 2
+};
+/**
+ * Boilerplate for requestAnimationFrame
+ */
+window.requestFrame = (function () {
     return window.requestAnimationFrame     || 
         window.webkitRequestAnimationFrame  || 
         window.mozRequestAnimationFrame     || 
@@ -8,25 +44,16 @@ window.requestAnimFrame = (function () {
             window.setTimeout(callback, 1000 / 60);
         };
 })();
-var Keys = {
-    LEFT : 37,
-    UP : 38,
-    RIGHT : 39,
-    DOWN : 40,
-    NONE : 'none'
-}
-var TileType = {
-    FLOOR : 'floor',
-    WALL : 'wall',
-    HOLE : 'hole',
-    PLAYER : 'player'
-}
+/**
+ * Sprites
+ */
 var Sprites = {
     images : [
-        TileType.PLAYER,
-        TileType.FLOOR,
-        TileType.HOLE,
-        TileType.WALL
+        TileTypes.PLAYER,
+        TileTypes.FLOOR,
+        TileTypes.HOLE,
+        TileTypes.WALL,
+        TileTypes.COIN
     ],
     collector : function (expectedCount, callback) {
         var receivedCount = 0;
@@ -38,10 +65,10 @@ var Sprites = {
         };
     },
     preFetch : function (callback) {
-        var update = this.collector(this.images.length, callback);
+        var update = this.collector(TileTypes.getCount(), callback);
         for (image in this.images)
         {
-            var imageName = this.images[image];
+            imageName = this.images[image];
             this[imageName] = new Image();
             this[imageName].src = 'images/' + imageName + '.png';
             this[imageName].addEventListener('load', update, false);
@@ -60,12 +87,19 @@ var Tile = function (x, y, type) {
 };
 Tile.prototype.move = function () {
     var nextTile = Enigma.getTileAt(this.x + this.dx, this.y + this.dy);
-    if (nextTile == false || nextTile.is(TileType.WALL))
+    if (nextTile == false || nextTile.is(TileTypes.WALL))
     {
         this.dx = 0;
         this.dy = 0;
         Enigma.state = GameStates.WAITING;
         return;
+    }
+    var thisTile = Enigma.getTileAt(this.x, this.y);
+    if (thisTile.is(TileTypes.COIN))
+    {
+        console.log(++Enigma.score);
+        thisTile.type = TileTypes.FLOOR;
+        console.log(Enigma.remainingCoins());
     }
     this.x += this.dx;
     this.y += this.dy;
@@ -100,7 +134,7 @@ Tile.prototype.is = function (type) {
     return this.type == type;
 };
 var Level = {};
-Level[TileType.WALL] = [
+Level[TileTypes.WALL] = [
     [1, 1],
     [2, 2],
     [3, 2],
@@ -115,8 +149,13 @@ Level[TileType.WALL] = [
     [5, 5],
     [6, 6]
 ];
+Level[TileTypes.COIN] = [
+    [5, 4],
+    [0, 1],
+    [6, 0]
+];
 /*
-Level[TileType.HOLE] = [
+Level[TileTypes.HOLE] = [
     [1, 2],
     [2, 3],
     [3, 4],
@@ -127,12 +166,7 @@ Level[TileType.HOLE] = [
     [8, 9]
 ];
 */
-Level[TileType.PLAYER] = [4, 3];
-GameStates = {
-    LOADING : 0,
-    WAITING : 1,
-    MOVING : 2,
-};
+Level[TileTypes.PLAYER] = [4, 3];
 var Enigma = {
     TILE_SIZE : 20,
     state : GameStates.LOADING,
@@ -141,6 +175,7 @@ var Enigma = {
     tiles : [],
     tileCount : [],
     currentKey : Keys.NONE,
+    score : 0,
     init : function () {
         this.canvas = this.canvasElement.getContext('2d');
         this.HEIGHT = this.canvasElement.attributes.height.value;
@@ -149,9 +184,9 @@ var Enigma = {
         this.tileCount.y = this.HEIGHT / this.TILE_SIZE;
         this.tiles = this.parseLevel(Level);
         this.player = new Tile(
-            Level[TileType.PLAYER][0],
-            Level[TileType.PLAYER][1],
-            TileType.PLAYER
+            Level[TileTypes.PLAYER][0],
+            Level[TileTypes.PLAYER][1],
+            TileTypes.PLAYER
         );
         this.drawMap(this.tiles);
         this.state = GameStates.WAITING;
@@ -169,9 +204,23 @@ var Enigma = {
     drawMap : function (tiles) {
         for (tile in tiles)
         {
+            var thisTile = tiles[tile],
+                floor = new Tile(thisTile.x, thisTile.y, TileTypes.FLOOR);
+            floor.draw();
             tiles[tile].draw();
         }
         this.player.draw();
+    },
+    remainingCoins : function () {
+        var coins = 0;
+        for (tile in this.tiles)
+        {
+            if (this.tiles[tile].type == TileTypes.COIN)
+            {
+                coins++;
+            }
+        }
+        return coins;
     },
     keyUpListener : function (e) {
         event = e || window.event;
@@ -199,7 +248,7 @@ var Enigma = {
         var tiles = [];
         for (tileType in level)
         {
-            if (tileType == TileType.PLAYER)
+            if (tileType == TileTypes.PLAYER)
             {
                 continue;
             }
@@ -219,7 +268,7 @@ var Enigma = {
             {
                 if (this.getTileAt(x, y) == false)
                 {
-                    tiles.push(new Tile(x, y, TileType.FLOOR));
+                    tiles.push(new Tile(x, y, TileTypes.FLOOR));
                 }
             }
         }
@@ -237,19 +286,25 @@ var Enigma = {
             this.player.setDirection(this.currentKey);
             this.state = GameStates.MOVING;
         }
+    },
+    start : function () {
+        Sprites.preFetch(function () {
+            Enigma.init();
+            document.onkeydown = Enigma.keyDownListener;
+            document.onkeyup = Enigma.keyUpListener;
+        });
+        (function gameLoop() {
+            window.requestFrame(gameLoop);
+            if (Enigma.state !== GameStates.LOADING)
+            {
+                Enigma.checkForMove();
+                Enigma.handleInput();
+                Enigma.drawMap(Enigma.tiles);
+            }
+        })();
     }
 };
-Sprites.preFetch(function () {
-    Enigma.init();
-    document.onkeydown = Enigma.keyDownListener;
-    document.onkeyup = Enigma.keyUpListener;
-});
-(function animationLoop() {
-    requestAnimFrame(animationLoop);
-    if (Enigma.state !== GameStates.LOADING)
-    {
-        Enigma.checkForMove();
-        Enigma.handleInput();
-        Enigma.drawMap(Enigma.tiles);
-    }
-})();
+/**
+ * Start the game
+ */
+Enigma.start();
