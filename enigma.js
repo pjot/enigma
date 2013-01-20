@@ -9,11 +9,26 @@ var Keys = {
     NONE : 'none'
 };
 var TileTypes = {
-    FLOOR : 'floor',
-    WALL : 'wall',
-    HOLE : 'hole',
-    PLAYER : 'player',
-    COIN : 'coin',
+    // Game tiles
+    FLOOR   : 'floor',
+    WALL    : 'wall',
+    HOLE    : 'hole',
+    PLAYER  : 'player',
+    COIN    : 'coin',
+    // Titlebar tiles
+    ONE     : '1',
+    TWO     : '2',
+    THREE   : '3',
+    FOUR    : '4',
+    FIVE    : '5',
+    SIX     : '6',
+    SEVEN   : '7',
+    EIGHT   : '8',
+    NINE    : '9',
+    ZERO    : '0',
+    SLASH   : 'slash',
+    TITLEBAR: 'titlebar',
+    // Static function to get number of used tiles for prefetching
     getCount : function () {
         var count = 0;
         for (item in TileTypes)
@@ -53,7 +68,19 @@ var Sprites = {
         TileTypes.FLOOR,
         TileTypes.HOLE,
         TileTypes.WALL,
-        TileTypes.COIN
+        TileTypes.COIN,
+        TileTypes.ONE,
+        TileTypes.TWO,
+        TileTypes.THREE,
+        TileTypes.FOUR,
+        TileTypes.FIVE,
+        TileTypes.SIX,
+        TileTypes.SEVEN,
+        TileTypes.EIGHT,
+        TileTypes.NINE,
+        TileTypes.ZERO,
+        TileTypes.SLASH,
+        TileTypes.TITLEBAR
     ],
     collector : function (expectedCount, callback) {
         var receivedCount = 0;
@@ -98,17 +125,17 @@ Tile.prototype.move = function () {
     switch (thisTile.type)
     {
         case TileTypes.COIN:
-            console.log(++Enigma.score + '/' + Enigma.totalCoins);
+            Enigma.score++;
             thisTile.type = TileTypes.FLOOR;
             if (Enigma.remainingCoins() == 0)
             {
-                alert('Won!');
+                console.log('Won!');
                 Enigma.state = GameStates.WAITING;
                 return;
             }
             break;
         case TileTypes.HOLE:
-            alert('Dead!');
+            console.log('Dead!');
             Enigma.state = GameStates.WAITING;
             return;
     }
@@ -136,7 +163,7 @@ Tile.prototype.setDirection = function (direction) {
 };
 Tile.prototype.draw = function () {
     var start_x = this.x * Enigma.TILE_SIZE,
-        start_y = this.y * Enigma.TILE_SIZE,
+        start_y = this.y * Enigma.TILE_SIZE + Enigma.TOP_OFFSET,
     canvas = Enigma.canvas;
     image = Sprites.getImage(this.type);
     canvas.drawImage(image, start_x, start_y);
@@ -144,8 +171,12 @@ Tile.prototype.draw = function () {
 Tile.prototype.is = function (type) {
     return this.type == type;
 };
-var Level = {};
-Level[TileTypes.WALL] = [
+var Level = {
+    name : 1,
+    player : [4, 3],
+    tiles : {}
+};
+Level.tiles[TileTypes.WALL] = [
     [1, 1],
     [2, 2],
     [3, 2],
@@ -160,12 +191,19 @@ Level[TileTypes.WALL] = [
     [5, 5],
     [6, 6]
 ];
-Level[TileTypes.COIN] = [
+Level.tiles[TileTypes.COIN] = [
     [11, 4],
     [0, 1],
-    [6, 0]
+    [6, 0],
+    [7, 0],
+    [8, 0],
+    [9, 0],
+    [10, 0],
+    [11, 0],
+    [12, 0],
+    [13, 0]
 ];
-Level[TileTypes.HOLE] = [
+Level.tiles[TileTypes.HOLE] = [
     [1, 2],
     [2, 3],
     [3, 4],
@@ -175,9 +213,9 @@ Level[TileTypes.HOLE] = [
     [7, 8],
     [17, 9]
 ];
-Level[TileTypes.PLAYER] = [4, 3];
 var Enigma = {
     TILE_SIZE : 20,
+    TOP_OFFSET : 20,
     state : GameStates.LOADING,
     canvasElement : document.getElementById('game'),
     tileSize : {},
@@ -191,11 +229,11 @@ var Enigma = {
         this.HEIGHT = this.canvasElement.attributes.height.value;
         this.WIDTH = this.canvasElement.attributes.width.value;
         this.tileCount.x = this.WIDTH / this.TILE_SIZE;
-        this.tileCount.y = this.HEIGHT / this.TILE_SIZE;
+        this.tileCount.y = (this.HEIGHT - this.TOP_OFFSET) / this.TILE_SIZE;
         this.tiles = this.parseLevel(Level);
         this.player = new Tile(
-            Level[TileTypes.PLAYER][0],
-            Level[TileTypes.PLAYER][1],
+            Level.player[0],
+            Level.player[1],
             TileTypes.PLAYER
         );
         this.totalCoins = 0;
@@ -228,6 +266,32 @@ var Enigma = {
             tiles[tile].draw();
         }
         this.player.draw();
+        this.drawTitleBar();
+    },
+    drawTitleBar : function () {
+        var score = this.score + '',
+            x = 0,
+            totalCoins = this.totalCoins + '';
+        for (i = 0; i < this.tileCount.x; i++)
+        {
+            t = new Tile(i, -1, TileTypes.TITLEBAR);
+            t.draw();
+        }
+        for (letter in score)
+        {
+            x++;
+            t = new Tile(x, -1, score[letter]);
+            t.draw();
+        }
+        x++;
+        t = new Tile(x, -1, TileTypes.SLASH);
+        t.draw();
+        for (letter in totalCoins)
+        {
+            x++;
+            t = new Tile(x, -1, totalCoins[letter]);
+            t.draw();
+        }
     },
     remainingCoins : function () {
         var coins = 0;
@@ -264,17 +328,13 @@ var Enigma = {
     },
     parseLevel : function (level) {
         var tiles = [];
-        for (tileType in level)
+        for (tileType in level.tiles)
         {
-            if (tileType == TileTypes.PLAYER)
-            {
-                continue;
-            }
-            for (row in level[tileType])
+            for (row in level.tiles[tileType])
             {
                 tiles.push(new Tile(
-                    level[tileType][row][0],
-                    level[tileType][row][1],
+                    level.tiles[tileType][row][0],
+                    level.tiles[tileType][row][1],
                     tileType
                 ));
             }
