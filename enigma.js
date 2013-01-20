@@ -224,6 +224,7 @@ var Enigma = {
     currentLevel : 0,
     score : 0,
     totalCoins: 0,
+    timestamp : 0,
     init : function () {
         this.canvas = this.canvasElement.getContext('2d');
         this.HEIGHT = this.canvasElement.attributes.height.value;
@@ -381,12 +382,16 @@ var Enigma = {
         }
     },
     start : function () {
+        Enigma.timestamp = + new Date();
         Sprites.preFetch(function () {
             Enigma.init();
             document.onkeydown = Enigma.keyDownListener;
             document.onkeyup = Enigma.keyUpListener;
         });
-        (function gameLoop() {
+        (function gameLoop(time) {
+            var fps = 1000 / (time - Enigma.timestamp);
+            Enigma.timestamp = time;
+            document.getElementById('fps').innerHTML = Math.floor(fps);
             window.requestFrame(gameLoop);
             if (Enigma.state !== GameStates.LOADING)
             {
