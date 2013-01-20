@@ -218,10 +218,10 @@ var Enigma = {
     TOP_OFFSET : 20,
     state : GameStates.LOADING,
     canvasElement : document.getElementById('game'),
-    tileSize : {},
     tiles : [],
     tileCount : [],
     currentKey : Keys.NONE,
+    currentLevel : 0,
     score : 0,
     totalCoins: 0,
     init : function () {
@@ -230,10 +230,16 @@ var Enigma = {
         this.WIDTH = this.canvasElement.attributes.width.value;
         this.tileCount.x = this.WIDTH / this.TILE_SIZE;
         this.tileCount.y = (this.HEIGHT - this.TOP_OFFSET) / this.TILE_SIZE;
-        this.tiles = this.parseLevel(Level);
+        this.loadLevel(Level);
+        this.drawMap(this.tiles);
+        this.state = GameStates.WAITING;
+    },
+    loadLevel : function (level) {
+        this.currentLevel = level.name;
+        this.tiles = this.parseLevel(level.tiles);
         this.player = new Tile(
-            Level.player[0],
-            Level.player[1],
+            level.player[0],
+            level.player[1],
             TileTypes.PLAYER
         );
         this.totalCoins = 0;
@@ -244,8 +250,6 @@ var Enigma = {
                 ++this.totalCoins;
             }
         }
-        this.drawMap(this.tiles);
-        this.state = GameStates.WAITING;
     },
     getTileAt : function (x, y) {
         for (tile in this.tiles)
@@ -271,12 +275,22 @@ var Enigma = {
     drawTitleBar : function () {
         var score = this.score + '',
             x = 0,
-            totalCoins = this.totalCoins + '';
+            totalCoins = this.totalCoins + '',
+            currentLevel = this.currentLevel + '';
+        // Draw background
         for (i = 0; i < this.tileCount.x; i++)
         {
             t = new Tile(i, -1, TileTypes.TITLEBAR);
             t.draw();
         }
+        // Draw current level
+        for (letter in currentLevel)
+        {
+            t = new Tile(x, -1, currentLevel[letter]);
+            t.draw();
+            x++;
+        }
+        // Draw current score
         for (letter in score)
         {
             x++;
@@ -286,6 +300,7 @@ var Enigma = {
         x++;
         t = new Tile(x, -1, TileTypes.SLASH);
         t.draw();
+        // Draw target score
         for (letter in totalCoins)
         {
             x++;
@@ -328,13 +343,13 @@ var Enigma = {
     },
     parseLevel : function (level) {
         var tiles = [];
-        for (tileType in level.tiles)
+        for (tileType in level)
         {
-            for (row in level.tiles[tileType])
+            for (row in level[tileType])
             {
                 tiles.push(new Tile(
-                    level.tiles[tileType][row][0],
-                    level.tiles[tileType][row][1],
+                    level[tileType][row][0],
+                    level[tileType][row][1],
                     tileType
                 ));
             }
