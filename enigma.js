@@ -152,8 +152,7 @@ Tile.prototype.move = function () {
             thisTile.type = TileTypes.FLOOR;
             if (window.game.remainingCoins() == 0)
             {
-                console.log('Won!');
-                window.game.state = GameStates.WAITING;
+                window.game.won();
                 return;
             }
             break;
@@ -296,11 +295,24 @@ Enigma.prototype.init = function () {
         x : this.WIDTH / this.TILE_SIZE,
         y : (this.HEIGHT - this.TOP_OFFSET) / this.TILE_SIZE
     };
-
     // Setup the game
     this.loadLevel(Level);
     this.drawMap(this.tiles);
     this.state = GameStates.WAITING;
+};
+
+Enigma.prototype.won = function () {
+    this.currentLevel++;
+    this.ajaxLoadLevel(this.currentLevel);
+};
+
+Enigma.prototype.ajaxLoadLevel = function (level_id) {
+    var url = '/enigma/ajax.php?level=' + level_id;
+    $.getJSON(url, function (data) {
+        window.game.loadLevel(data);
+        window.game.drawMap(window.game.tiles);
+        window.game.state = GameStates.WAITING;
+    });
 };
 
 /**
@@ -308,7 +320,7 @@ Enigma.prototype.init = function () {
  */
 Enigma.prototype.loadLevel = function (level) {
     this.currentLevel = level.name;
-    this.tiles = this.parseLevel(level.tiles);
+    this.parseLevel(level.tiles);
     this.player = new Tile(
         level.player[0],
         level.player[1],
@@ -324,6 +336,7 @@ Enigma.prototype.loadLevel = function (level) {
             ++this.totalCoins;
         }
     }
+    console.log('Starting game with level: ' + this.currentLevel);
 };
 
 /**
@@ -471,7 +484,7 @@ Enigma.prototype.parseLevel = function (level) {
             }
         }
     }
-    return tiles;
+    this.tiles = tiles;
 };
 
 /**
