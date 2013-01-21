@@ -411,7 +411,7 @@ Enigma.prototype.remainingCoins = function () {
 };
 
 /**
- * Listener for keyUp event.
+ * Static listener for keyUp event.
  */
 Enigma.keyUpListener = function (e) {
     event = e || window.event;
@@ -426,7 +426,7 @@ Enigma.keyUpListener = function (e) {
 };
 
 /**
- * Listener for keyDown event.
+ * Static listener for keyDown event.
  */
 Enigma.keyDownListener = function (e) {
     event = e || window.event;
