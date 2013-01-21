@@ -307,7 +307,7 @@ Enigma.prototype.won = function () {
 };
 
 Enigma.prototype.ajaxLoadLevel = function (level_id) {
-    var url = '/enigma/ajax.php?level=' + level_id;
+    var url = 'ajax.php?level=' + level_id;
     $.getJSON(url, function (data) {
         window.game.loadLevel(data);
         window.game.drawMap(window.game.tiles);
