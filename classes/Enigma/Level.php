@@ -10,6 +10,7 @@ class Level extends Model
         'id',
         'data',
         'name',
+        'number'
     );
     protected static $table = 'levels';
 }
