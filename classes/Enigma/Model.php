@@ -28,6 +28,26 @@ class Model
     }
 
     /**
+     * Returns the table name for a model.
+     *
+     * The table name is the class name plus an s. The method also removes the namespace. Example:
+     * Input: \Enigma\Level
+     * Output: levels
+     */
+    private static function getTable($class)
+    {
+        return sprintf(
+            '%ss',
+            array_pop(
+                explode(
+                    '\\', 
+                    strtolower($class)
+                )
+            )
+        );
+    }
+
+    /**
      * Creates a row in the database.
      */
     protected function create()
@@ -45,7 +65,7 @@ class Model
         }
         $sql = sprintf(
             'insert into %s (%s) values (%s)',
-            static::$table,
+            self::getTable(get_called_class()),
             implode($fields, ','),
             implode($values, ',')
         );
@@ -70,7 +90,7 @@ class Model
         }
         $sql = sprintf(
             'update %s set %s where id = "%s"',
-            static::$table,
+            self::getTable(get_called_class()),
             implode($fields, ','),
             $this->id
         );
@@ -86,7 +106,7 @@ class Model
         $sql = sprintf(
             'select %s from %s',
             implode(static::$fields, ','),
-            static::$table
+            self::getTable(get_called_class())
         );
         $db = DbConnection::getInstance();
         $result = $db->query($sql);
@@ -112,7 +132,7 @@ class Model
         $sql = sprintf(
             'select %s from %s where id = "%s"',
             implode(static::$fields, ','),
-            static::$table,
+            self::getTable(get_called_class()),
             $id
         );
         $db = DbConnection::getInstance();

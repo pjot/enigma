@@ -20,8 +20,4 @@ class Level extends Model
         'name',
         'number'
     );
-    /**
-     * Database table
-     */
-    protected static $table = 'levels';
 }
