@@ -107,13 +107,17 @@ class Model
     /**
      * Fetches all objects in the database. Returns an array containing the objects.
      */
-    public static function getAll()
+    public static function getAll($sort = null, $direction = null)
     {
         $sql = sprintf(
             'select %s from %s',
             implode(static::$fields, ','),
             self::getTable(get_called_class())
         );
+        if (isset($sort) && isset($direction))
+        {
+            $sql .= sprintf(' order by %s %s', $sort, $direction);
+        }
         $db = DbConnection::getInstance();
         $result = $db->query($sql);
         $class = get_called_class();
@@ -168,12 +172,12 @@ class Model
         );
         $db = DbConnection::getInstance();
         $result = $db->query($sql);
-        if ($result->rowCount() !== 1)
-        {
-            throw new Exception();
-        }
         $class = get_called_class();
         $item = new $class();
+        if ($result->rowCount() === 0)
+        {
+            return $item;
+        }
         $row = $result->fetch(\PDO::FETCH_ASSOC);
         foreach ($row as $key => $value)
         {

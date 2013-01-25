@@ -253,7 +253,8 @@ Enigma.prototype.serializeMap = function () {
     var postData = {
         data : JSON.stringify(level),
         number : document.getElementById('number').value,
-        name : document.getElementById('name').value
+        name : document.getElementById('name').value,
+        id : document.getElementById('id').value
     };
     $.post('admin.php?action=save', postData, function (data) {
         alert('Saved.');

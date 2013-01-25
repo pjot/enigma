@@ -5,6 +5,8 @@
             window.currentLevel = {{ level.number|default(0) }};
         </script>
     <body>
+        <a href="admin.php">Back To List</a>
+        <br />
         <canvas id="game" height="420" width="600"></canvas>
         <br />
         <label for="name">Name:</label> <input type="text" id="name" name="name" value="{{ level.name }}" />
@@ -13,6 +15,7 @@
         <br />
 
         <input type="button" value="Save" onClick="window.game.serializeMap();return false;" />
+        <input type="hidden" value="{{ level.id }}" name="id" id="id" />
         <script type="text/javascript" src="jquery.min.js"></script>
         <script type="text/javascript" src="enigma.editor.js"></script>
     </body>

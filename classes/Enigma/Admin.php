@@ -67,7 +67,7 @@ class Admin
 
     private function actionSave()
     {
-        $level = \Enigma\Level::getWhere('number', $_POST['number']);
+        $level = \Enigma\Level::getById($_POST['id']);
         $level->name = $_POST['name'];
         $level->number = $_POST['number'];
         $level->data = $_POST['data'];
@@ -94,7 +94,7 @@ class Admin
     private function actionList()
     {
         $this->view = new \Enigma\Views\Listing(
-            \Enigma\Level::getAll()
+            \Enigma\Level::getAll('number', 'asc')
         );
     }
 
