@@ -54,6 +54,7 @@ class Model
     {
         $fields = array();
         $values = array();
+        $prep = array();
         foreach (static::$fields as $field)
         {
             if ( ! isset($this->$field))
@@ -61,16 +62,18 @@ class Model
                 continue;
             }
             $fields[] = $field;
-            $values[] = sprintf('"%s"', $this->$field); 
+            $prep[] = ':' . $field;
+            $values[':' . $field] = $this->$field;
         }
         $sql = sprintf(
             'insert into %s (%s) values (%s)',
             self::getTable(get_called_class()),
             implode($fields, ','),
-            implode($values, ',')
+            implode($prep, ',')
         );
         $db = DbConnection::getInstance();
-        $db->exec($sql);
+        $statement = $db->prepare($sql);
+        $statement->execute($values);
         $this->id = $db->lastInsertId();
     }
 
@@ -122,6 +125,31 @@ class Model
             $items[] = $item;
         }
         return $items;
+    }
+
+    public static function getWhere($field, $value)
+    {
+        $sql = sprintf(
+            'select %s from %s where %s = "%s"',
+            implode(static::$fields, ','),
+            self::getTable(get_called_class()),
+            $field,
+            $value
+        );
+        $db = DbConnection::getInstance();
+        $result = $db->query($sql);
+        if ($result->rowCount() !== 1)
+        {
+            throw new Exception();
+        }
+        $class = get_called_class();
+        $item = new $class();
+        $row = $result->fetch(\PDO::FETCH_ASSOC);
+        foreach ($row as $key => $value)
+        {
+            $item->$key = $value;
+        }
+        return $item;
     }
 
     /**

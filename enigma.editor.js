@@ -229,39 +229,41 @@ Enigma.prototype.remainingCoins = function () {
 };
 
 /**
- * Serializes into PHP object
+ * Serializes map so it can be sent to the server
  */
 Enigma.prototype.serializeMap = function () {
     var types = [TileTypes.WALL, TileTypes.COIN, TileTypes.HOLE],
-        output = '',
-        outputElement = document.getElementById('output'),
-        phpVar = document.getElementById('php').value;
-    output += phpVar + " => array(\n";
-    output += "'name' => " + phpVar + ",\n";
+        level = {};
     for (t in this.tiles)
     {
         var tile = this.tiles[t];
         if (tile.is(TileTypes.PLAYER))
         {
-            output += "'player' => array(" + tile.x + ", " + tile.y + "),\n";
+            level.player = [tile.x, tile.y];
         }
     }
-    output += "'tiles' => array(\n";
+    level.tiles = {};
     for (i in types)
     {
-        output += "'" + types[i] + "' => array(\n";
+        var thisType = [];
         for (t in this.tiles)
         {
             var tile = this.tiles[t];
             if (tile.is(types[i]))
             {
-                output += "array(" + tile.x + ", " + tile.y + "),\n";
+                thisType.push([tile.x, tile.y]);
             }
         }
-        output += "),\n";
+        level.tiles[types[i]] = thisType;
     }
-    output += "),\n),\n";
-    outputElement.innerHTML = output;
+    var postData = {
+        data : JSON.stringify(level),
+        number : document.getElementById('number').value,
+        name : document.getElementById('name').value
+    };
+    $.post('admin.php?action=save', postData, function (data) {
+        console.log(data);
+    });
 };
 
 /**

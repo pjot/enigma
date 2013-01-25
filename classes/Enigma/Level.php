@@ -20,4 +20,14 @@ class Level extends Model
         'name',
         'number'
     );
+
+    public function toJSON()
+    {
+        $json_data = json_decode($this->data);
+        return json_encode(array(
+            'name' => (int) $this->number,
+            'player' => $json_data->player,
+            'tiles' => $json_data->tiles
+        ));
+    }
 }

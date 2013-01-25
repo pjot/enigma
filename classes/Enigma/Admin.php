@@ -45,6 +45,9 @@ class Admin
             case 'edit':
                 $this->action = 'Edit';
                 break;
+            case 'save':
+                $this->action = 'Save';
+                break;
             case 'list':
             default:
                 $this->action = 'List';
@@ -62,12 +65,27 @@ class Admin
         $this->{'action' . $this->action}();
     }
 
+    private function actionSave()
+    {
+        $level = new \Enigma\Level();
+        $level->name = $_POST['name'];
+        $level->number = $_POST['number'];
+        $level->data = $_POST['data'];
+        $level->save();
+        echo $level->toJSON();
+        exit;
+    }
+
     /**
      * Edit a level.
      */
     private function actionEdit()
     {
-
+        if (isset($this->get['id']))
+        {
+            $level = \Enigma\Level::getById($this->get['id']);
+        }
+        $this->view = new \Enigma\Views\Edit($level);
     }
 
     /**
