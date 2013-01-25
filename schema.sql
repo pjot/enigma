@@ -29,8 +29,18 @@ CREATE TABLE `levels` (
   `number` int(8) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_number` (`number`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `levels`
+--
+
+LOCK TABLES `levels` WRITE;
+/*!40000 ALTER TABLE `levels` DISABLE KEYS */;
+INSERT INTO `levels` VALUES (11,'{\"player\":[5,17],\"tiles\":{\"wall\":[[4,9],[4,10],[4,11],[5,9],[16,17],[17,9],[17,17],[18,9],[18,10],[18,17]],\"coin\":[[5,10],[17,10],[17,16]],\"hole\":[]}}','andra banan',2),(12,'{\"player\":[3,8],\"tiles\":{\"wall\":[[2,17],[2,18],[2,19],[3,19],[4,19],[19,7],[20,17],[20,18]],\"coin\":[[3,18],[19,8],[19,18]],\"hole\":[]}}','tredje',3),(13,'{\"player\":[21,8],\"tiles\":{\"wall\":[[3,17],[4,7],[21,18]],\"coin\":[[4,8],[4,17],[21,17]],\"hole\":[]}}','fyra',4),(16,'{\"player\":[21,8],\"tiles\":{\"wall\":[[3,17],[4,7],[21,18]],\"coin\":[[4,8],[4,17],[21,17]],\"hole\":[]}}','sex',6),(17,'{\"player\":[4,13],\"tiles\":{\"wall\":[[3,4],[3,5],[4,4],[7,15],[8,7],[15,16],[16,5],[25,8]],\"coin\":[[4,9],[8,8],[8,15],[15,5],[15,15],[24,8]],\"hole\":[]}}','fem',5);
+/*!40000 ALTER TABLE `levels` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -41,4 +51,4 @@ CREATE TABLE `levels` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-01-25 19:15:26
+-- Dump completed on 2013-01-26  0:42:30
