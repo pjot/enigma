@@ -1,0 +1,8 @@
+<html>
+    <body>
+        <h1>Levels:</h1>
+        {% for level in levels %}
+            <a href="admin.php?action=edit&id={{ level.id }}">{{ level.number }} - {{ level.name }}</a>
+        {% endfor %}
+    </body>
+</html>

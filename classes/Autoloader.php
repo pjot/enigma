@@ -1,7 +1,7 @@
 <?php
 
 function autoload($className) {
-	$fileName = sprintf('/var/www/enigma/classes/%s.php', str_replace('\\', '/', $className));
+	$fileName = sprintf('%s/%s.php', dirname(__FILE__), str_replace('\\', '/', $className));
 	if (file_exists($fileName)) {
 		require($fileName);
 		return true;
@@ -9,3 +9,7 @@ function autoload($className) {
 	return false;
 }
 spl_autoload_register('autoload');
+
+require_once 'Twig/Autoloader.php';
+Twig_Autoloader::register();
+

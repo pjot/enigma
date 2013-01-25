@@ -11,5 +11,14 @@ abstract class View
         $this->data = $data;
     }
 
+    protected function getTemplate($template)
+    {
+        $loader = new \Twig_Loader_Filesystem('templates/');
+        $twig = new \Twig_Environment($loader, array(
+            'cache' => 'cache/',
+        ));
+        return $twig->loadTemplate($template);
+    }
+
     abstract public function display();
 }
