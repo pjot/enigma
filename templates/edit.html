@@ -12,7 +12,7 @@
         <label for="number">Number:</label> <input type="text" id="number" name="number" value="{{ level.number }}" />
         <br />
 
-        <input type="button" value="Save" />
+        <input type="button" value="Save" onClick="window.game.serializeMap();return false;" />
         <script type="text/javascript" src="jquery.min.js"></script>
         <script type="text/javascript" src="enigma.editor.js"></script>
     </body>

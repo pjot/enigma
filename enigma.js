@@ -319,6 +319,7 @@ Enigma.prototype.ajaxLoadLevel = function (level_id) {
  * Loads a level into the game.
  */
 Enigma.prototype.loadLevel = function (level) {
+    this.score = 0;
     this.currentLevel = level.name;
     this.parseLevel(level.tiles);
     this.player = new Tile(
