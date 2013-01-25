@@ -2,7 +2,7 @@
     <head>
         <title>Enigma</title>
         <script type="text/javascript">
-            window.currentLevel = {{ level.number }};
+            window.currentLevel = {{ level.number|default(0) }};
         </script>
     <body>
         <canvas id="game" height="420" width="600"></canvas>

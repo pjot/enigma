@@ -97,6 +97,10 @@ Tile.prototype.toggle = function () {
     t = new Tile(this.x, this.y, TileTypes.FLOOR);
     t.draw();
     this.draw();
+    if (this.is(TileTypes.PLAYER))
+    {
+        window.game.player = this;
+    }
 };
 
 /**
@@ -141,9 +145,6 @@ Enigma.prototype.init = function () {
         x : this.WIDTH / this.TILE_SIZE,
         y : (this.HEIGHT - this.TOP_OFFSET) / this.TILE_SIZE
     };
-    // Setup the game
-    this.makeEmptyLevel();
-    this.drawMap(this.tiles);
 };
 
 /**
@@ -234,14 +235,7 @@ Enigma.prototype.loadLevel = function (level) {
 Enigma.prototype.serializeMap = function () {
     var types = [TileTypes.WALL, TileTypes.COIN, TileTypes.HOLE],
         level = {};
-    for (t in this.tiles)
-    {
-        var tile = this.tiles[t];
-        if (tile.is(TileTypes.PLAYER))
-        {
-            level.player = [tile.x, tile.y];
-        }
-    }
+    level.player = [this.player.x, this.player.y];
     level.tiles = {};
     for (i in types)
     {
@@ -278,10 +272,6 @@ Enigma.onClickListener = function (e) {
     tile.toggle();
 };
 
-/**
- * Parses the tiles in a level and creates Tile objects.
- * Fills up empty tiles with floor tiles.
- */
 Enigma.prototype.makeEmptyLevel = function () {
     var tiles = [];
     // Put a floor tile on all remaining tiles
@@ -293,6 +283,7 @@ Enigma.prototype.makeEmptyLevel = function () {
         }
     }
     this.tiles = tiles;
+    this.drawMap(this.tiles);
 };
 
 /**
@@ -301,7 +292,14 @@ Enigma.prototype.makeEmptyLevel = function () {
 Enigma.prototype.start = function () {
     ImageCache.preFetch(function () {
         window.game.init();
-        window.game.ajaxLoadLevel(currentLevel);
+        if (currentLevel !== 0)
+        {
+            window.game.ajaxLoadLevel(currentLevel);
+        }
+        else
+        {
+            window.game.makeEmptyLevel();
+        }
     });
 };
 
