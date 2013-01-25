@@ -83,13 +83,15 @@ class Model
     protected function update()
     {
         $fields = array();
+        $values = array();
         foreach (static::$fields as $field)
         {
             $fields[] = sprintf(
-                '%s = "%s"',
+                '%s = :%s',
                 $field,
-                $this->$field
+                $field
             );
+            $values[':' . $field] = $this->$field;
         }
         $sql = sprintf(
             'update %s set %s where id = "%s"',
@@ -98,7 +100,8 @@ class Model
             $this->id
         );
         $db = DbConnection::getInstance();
-        return $db->exec($sql) === 1;
+        $statement = $db->prepare($sql);
+        return $statement->execute($values) === true;
     }
 
     /**
@@ -129,6 +132,8 @@ class Model
 
     public static function getWhere($field, $value)
     {
+        $class = get_called_class();
+        $item = new $class();
         $sql = sprintf(
             'select %s from %s where %s = "%s"',
             implode(static::$fields, ','),
@@ -140,10 +145,8 @@ class Model
         $result = $db->query($sql);
         if ($result->rowCount() !== 1)
         {
-            throw new Exception();
+            return $item;
         }
-        $class = get_called_class();
-        $item = new $class();
         $row = $result->fetch(\PDO::FETCH_ASSOC);
         foreach ($row as $key => $value)
         {

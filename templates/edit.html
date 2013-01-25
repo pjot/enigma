@@ -1,12 +1,15 @@
 <html>
     <head>
         <title>Enigma</title>
+        <script type="text/javascript">
+            window.currentLevel = {{ level.number }};
+        </script>
     <body>
         <canvas id="game" height="420" width="600"></canvas>
         <br />
-        <label for="name">Name:</label> <input type="text" id="name" name="name" />
+        <label for="name">Name:</label> <input type="text" id="name" name="name" value="{{ level.name }}" />
         <br />
-        <label for="number">Number:</label> <input type="text" id="number" name="number" />
+        <label for="number">Number:</label> <input type="text" id="number" name="number" value="{{ level.number }}" />
         <br />
 
         <input type="button" value="Save" />

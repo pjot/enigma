@@ -173,59 +173,59 @@ Enigma.prototype.drawMap = function (tiles) {
     }
 };
 
-/**
- * Draw titlebar.
- */
-Enigma.prototype.drawTitleBar = function () {
-    var score = this.score + '',
-        x = 0,
-        totalCoins = this.totalCoins + '',
-        currentLevel = this.currentLevel + '';
-    // Draw background
-    for (i = 0; i < this.tileCount.x; i++)
-    {
-        t = new Tile(i, -1, TileTypes.TITLEBAR);
-        t.draw();
-    }
-    // Draw current level
-    for (letter in currentLevel)
-    {
-        t = new Tile(x, -1, currentLevel[letter]);
-        t.draw();
-        x++;
-    }
-    // Draw current score
-    for (letter in score)
-    {
-        x++;
-        t = new Tile(x, -1, score[letter]);
-        t.draw();
-    }
-    x++;
-    t = new Tile(x, -1, TileTypes.SLASH);
-    t.draw();
-    // Draw target score
-    for (letter in totalCoins)
-    {
-        x++;
-        t = new Tile(x, -1, totalCoins[letter]);
-        t.draw();
-    }
+Enigma.prototype.ajaxLoadLevel = function (level_id) {
+    var url = 'ajax.php?level=' + level_id;
+    $.getJSON(url, function (data) {
+        window.game.loadLevel(data);
+        window.game.drawMap(window.game.tiles);
+        window.game.player.draw();
+    });
 };
 
 /**
- * Calculates remaining coins in the level.
+ * Parses the tiles in a level and creates Tile objects.
+ * Fills up empty tiles with floor tiles.
  */
-Enigma.prototype.remainingCoins = function () {
-    var coins = 0;
-    for (tile in this.tiles)
+Enigma.prototype.parseLevel = function (level) {
+    var tiles = [];
+    // Place the non-floor tiles 
+    for (tileType in level)
     {
-        if (this.tiles[tile].type == TileTypes.COIN)
+        for (row in level[tileType])
         {
-            coins++;
+            tiles.push(new Tile(
+                level[tileType][row][0],
+                level[tileType][row][1],
+                tileType
+            ));
         }
     }
-    return coins;
+    // Store them
+    this.tiles = tiles;
+    // Put a floor tile on all remaining tiles
+    for (x = 0; x < this.tileCount.x; x++)
+    {
+        for (y = 0; y < this.tileCount.y; y++)
+        {
+            if (this.getTileAt(x, y) == false)
+            {
+                tiles.push(new Tile(x, y, TileTypes.FLOOR));
+            }
+        }
+    }
+    this.tiles = tiles;
+};
+
+/**
+ * Loads a level into the game.
+ */
+Enigma.prototype.loadLevel = function (level) {
+    this.parseLevel(level.tiles);
+    this.player = new Tile(
+        level.player[0],
+        level.player[1],
+        TileTypes.PLAYER
+    );
 };
 
 /**
@@ -301,6 +301,7 @@ Enigma.prototype.makeEmptyLevel = function () {
 Enigma.prototype.start = function () {
     ImageCache.preFetch(function () {
         window.game.init();
+        window.game.ajaxLoadLevel(currentLevel);
     });
 };
 

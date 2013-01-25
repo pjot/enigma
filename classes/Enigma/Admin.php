@@ -67,7 +67,7 @@ class Admin
 
     private function actionSave()
     {
-        $level = new \Enigma\Level();
+        $level = \Enigma\Level::getWhere('number', $_POST['number']);
         $level->name = $_POST['name'];
         $level->number = $_POST['number'];
         $level->data = $_POST['data'];
