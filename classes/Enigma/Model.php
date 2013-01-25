@@ -4,8 +4,17 @@ namespace Enigma;
 
 use \Enigma\DbConnection;
 
+/**
+ * Base model, handles CRUD actions on the models.
+ * All models extends this class.
+ *
+ * @author pjot
+ */
 class Model
 {
+    /**
+     * Saves the instance to the database. Updates or creates depending on the id field.
+     */
     public function save()
     {
         if (isset($this->id))
@@ -18,6 +27,9 @@ class Model
         }
     }
 
+    /**
+     * Creates a row in the database.
+     */
     protected function create()
     {
         $fields = array();
@@ -42,6 +54,9 @@ class Model
         $this->id = $db->lastInsertId();
     }
 
+    /**
+     * Updates a row in the database.
+     */
     protected function update()
     {
         $fields = array();
@@ -63,6 +78,9 @@ class Model
         return $db->exec($sql) === 1;
     }
 
+    /**
+     * Fetches all objects in the database. Returns an array containing the objects.
+     */
     public static function getAll()
     {
         $sql = sprintf(
@@ -86,6 +104,9 @@ class Model
         return $items;
     }
 
+    /**
+     * Fetches a single object and returns it.
+     */
     public static function getById($id)
     {
         $sql = sprintf(
