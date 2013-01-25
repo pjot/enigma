@@ -2,5 +2,5 @@
 
 require_once 'classes/Autoloader.php';
 
-$levels = \Enigma\Level::getAll();
-var_dump($levels);
+$level = \Enigma\Level::getAll();
+var_dump($level);
