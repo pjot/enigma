@@ -180,6 +180,7 @@ Tile.prototype.move = function () {
     // Move
     this.x += this.dx;
     this.y += this.dy;
+    window.game.registerMove();
 };
 
 /**
@@ -238,6 +239,8 @@ var Enigma = function (canvasElement) {
     this.score = 0;
     this.totalCoins= 0;
     this.timestamp = 0;
+    this.moves = 0;
+    this.hasMoved = false;
 };
 
 /**
@@ -275,6 +278,7 @@ Enigma.prototype.ajaxLoadLevel = function (level_id) {
  */
 Enigma.prototype.loadLevel = function (level) {
     this.score = 0;
+    this.moves = 0;
     this.currentLevel = level.name;
     this.parseLevel(level.tiles);
     this.player = new Tile(
@@ -331,7 +335,8 @@ Enigma.prototype.drawTitleBar = function () {
     var score = this.score + '',
         x = 0,
         totalCoins = this.totalCoins + '',
-        currentLevel = this.currentLevel + '';
+        currentLevel = this.currentLevel + '',
+        currentMoves = this.moves + '';
     // Draw background
     for (i = 0; i < this.tileCount.x; i++)
     {
@@ -360,6 +365,14 @@ Enigma.prototype.drawTitleBar = function () {
     {
         x++;
         t = new Tile(x, -1, totalCoins[letter]);
+        t.draw();
+    }
+    x = this.tileCount.x;
+    movesReverse = currentMoves.split('').reverse().join('');
+    for (letter in movesReverse)
+    {
+        x--;
+        t = new Tile(x, -1, movesReverse[letter]);
         t.draw();
     }
 };
@@ -458,6 +471,14 @@ Enigma.prototype.checkForMove = function () {
     }
 };
 
+Enigma.prototype.registerMove = function () {
+    if ( ! this.hasMoved)
+    {
+        this.moves++;
+    }
+    this.hasMoved = true;
+};
+
 /**
  * Delegates keyboard inputs.
  */
@@ -466,6 +487,7 @@ Enigma.prototype.handleInput = function () {
     {
         this.player.setDirection(Enigma.currentKey);
         this.state = GameStates.MOVING;
+        this.hasMoved = false;
     }
 };
 
