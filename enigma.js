@@ -1,12 +1,16 @@
 /**
  * Enums.
  */
-var Keys = {
+var MovementKeys = {
     LEFT : 37,
     UP : 38,
     RIGHT : 39,
     DOWN : 40,
     NONE : 'none'
+};
+
+var ActionKeys = {
+    R : 82
 };
 
 var TileTypes = {
@@ -186,16 +190,16 @@ Tile.prototype.setDirection = function (direction) {
     this.dy = 0;
     switch (direction)
     {
-        case Keys.UP:
+        case MovementKeys.UP:
             this.dy = -1;
             break;
-        case Keys.DOWN:
+        case MovementKeys.DOWN:
             this.dy = 1;
             break;
-        case Keys.LEFT:
+        case MovementKeys.LEFT:
             this.dx = -1;
             break;
-        case Keys.RIGHT:
+        case MovementKeys.RIGHT:
             this.dx = 1;
             break;
     }
@@ -219,58 +223,11 @@ Tile.prototype.is = function (type) {
 };
 
 /**
- * Level 1 object
- * TODO: Fetch levels using Ajax.
- */
-var Level = {
-    name : 1,
-    player : [4, 3],
-    tiles : {}
-};
-Level.tiles[TileTypes.WALL] = [
-    [1, 1],
-    [2, 2],
-    [3, 2],
-    [12, 3],
-    [12, 1],
-    [3, 3],
-    [8, 6],
-    [11, 6],
-    [18, 5],
-    [3, 0],
-    [4, 4],
-    [5, 5],
-    [6, 6]
-];
-Level.tiles[TileTypes.COIN] = [
-    [11, 4],
-    [0, 1],
-    [6, 0],
-    [7, 0],
-    [8, 0],
-    [9, 0],
-    [10, 0],
-    [11, 0],
-    [12, 0],
-    [13, 0]
-];
-Level.tiles[TileTypes.HOLE] = [
-    [1, 2],
-    [2, 3],
-    [3, 4],
-    [4, 5],
-    [5, 6],
-    [6, 7],
-    [7, 8],
-    [17, 9]
-];
-
-/**
  * Main game object. Keeps track of everything.
  * @constructor
  */
 var Enigma = function (canvasElement) {
-    Enigma.currentKey = Keys.NONE;
+    Enigma.currentKey = MovementKeys.NONE;
     this.TILE_SIZE = 20;
     this.TOP_OFFSET = 20;
     this.state = GameStates.LOADING;
@@ -296,9 +253,7 @@ Enigma.prototype.init = function () {
         y : (this.HEIGHT - this.TOP_OFFSET) / this.TILE_SIZE
     };
     // Setup the game
-    this.loadLevel(Level);
-    this.drawMap(this.tiles);
-    this.state = GameStates.WAITING;
+    this.ajaxLoadLevel(1);
 };
 
 Enigma.prototype.won = function () {
@@ -429,11 +384,11 @@ Enigma.prototype.remainingCoins = function () {
  */
 Enigma.keyUpListener = function (e) {
     event = e || window.event;
-    for (key in Keys)
+    for (key in MovementKeys)
     {
-        if (event.keyCode == Keys[key])
+        if (event.keyCode == MovementKeys[key])
         {
-            Enigma.currentKey = Keys.NONE;
+            Enigma.currentKey = MovementKeys.NONE;
             break;
         }
     }
@@ -444,11 +399,16 @@ Enigma.keyUpListener = function (e) {
  */
 Enigma.keyDownListener = function (e) {
     event = e || window.event;
-    for (key in Keys)
+    if (event.keyCode == ActionKeys.R)
     {
-        if (event.keyCode == Keys[key] && event.keyCode != Enigma.currentKey)
+        window.game.ajaxLoadLevel(window.game.currentLevel);
+        return;
+    }
+    for (key in MovementKeys)
+    {
+        if (event.keyCode == MovementKeys[key] && event.keyCode != Enigma.currentKey)
         {
-            Enigma.currentKey = Keys[key];
+            Enigma.currentKey = MovementKeys[key];
             break;
         }
     }
@@ -502,7 +462,7 @@ Enigma.prototype.checkForMove = function () {
  * Delegates keyboard inputs.
  */
 Enigma.prototype.handleInput = function () {
-    if (Enigma.currentKey != Keys.NONE && this.state == GameStates.WAITING)
+    if (Enigma.currentKey != MovementKeys.NONE && this.state == GameStates.WAITING)
     {
         this.player.setDirection(Enigma.currentKey);
         this.state = GameStates.MOVING;
