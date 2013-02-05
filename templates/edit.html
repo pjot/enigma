@@ -1,22 +1,30 @@
-<html>
-    <head>
-        <title>Enigma</title>
-        <script type="text/javascript">
-            window.currentLevel = {{ level.number|default(0) }};
-        </script>
-    <body>
-        <a href="admin.php">Back To List</a>
-        <br />
-        <canvas id="game" height="420" width="600"></canvas>
-        <br />
-        <label for="name">Name:</label> <input type="text" id="name" name="name" value="{{ level.name }}" />
-        <br />
-        <label for="number">Number:</label> <input type="text" id="number" name="number" value="{{ level.number }}" />
-        <br />
+<script type="text/javascript">
+    window.currentLevel = {{ level.number|default(0) }};
+</script>
+<form>
+    <input type="hidden" value="{{ level.id }}" name="id" id="id" />
+    <div class="well" style="text-align: center; margin-top: 10px;">
+        <canvas id="game" height="420" width="600" class="img-polaroid" style="cursor: none;"></canvas>
+        <div id="tile_selection">
+            <img src="images/floor.png" class="img-polaroid" rel="floor" />
+            <img src="images/wall.png" rel="wall" />
+            <img src="images/coin.png" rel="coin" />
+            <img src="images/hole.png" rel="hole" />
+            <img src="images/player.png" rel="player" />
+        </div>
+    </div>
+    <div class="well">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" placeholder="Name" value="{{ level.name }}" />
+        <label for="number">Number:</label>
+        <input type="text" id="number" name="number" placeholder="Number" value="{{ level.number }}" />
 
-        <input type="button" value="Save" onClick="window.game.serializeMap();return false;" />
-        <input type="hidden" value="{{ level.id }}" name="id" id="id" />
-        <script type="text/javascript" src="jquery.min.js"></script>
-        <script type="text/javascript" src="enigma.editor.js"></script>
-    </body>
-</html>
+        <div class="form-actions">
+            <button type="button" class="btn btn-primary" onClick="window.game.serializeMap();return false;">Save</button>
+            <a class="btn" href="admin.php">Cancel</a>
+        </div>
+    </div>
+</form>
+
+<script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="enigma.editor.js"></script>

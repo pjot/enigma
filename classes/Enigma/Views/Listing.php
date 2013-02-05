@@ -2,12 +2,12 @@
 
 namespace Enigma\Views;
 
-class Listing extends \Enigma\View
+class Listing extends \Enigma\AdminView
 {
-    public function display()
+    public function render()
     {
         $template = $this->getTemplate('list.html');
-        $template->display(array(
+        return $template->render(array(
             'levels' => $this->data
         ));
     }

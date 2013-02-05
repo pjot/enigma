@@ -1,13 +1,20 @@
-<html>
-    <body>
-        <h1>Levels:</h1>
-        {% for level in levels %}
-            <a href="admin.php?action=edit&id={{ level.id }}">
-                {{ level.number }} - {{ level.name }}
-            </a>
-            <br />
-            {% endfor %}
-        <br />
-        <a href="admin.php?action=edit">Create New Level</a>
-    </body>
-</html>
+<h1>Levels:</h1>
+
+<table class="table table-striped table-hover table-bordered">
+    <tr>
+        <th>#</th>
+        <th>Name</th>
+    </tr>
+    {% for level in levels %}
+        <tr>
+            <td>{{ level.number }}</td>
+            <td>
+                <a href="admin.php?action=edit&id={{ level.id }}">
+                    {{ level.name }}
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+<a href="admin.php?action=edit">Create New Level</a>

@@ -2,12 +2,12 @@
 
 namespace Enigma\Views;
 
-class Edit extends \Enigma\View
+class Edit extends \Enigma\AdminView
 {
-    public function display()
+    public function render()
     {
         $template = $this->getTemplate('edit.html');
-        $template->display(array(
+        return $template->render(array(
             'level' => $this->data
         ));
     }

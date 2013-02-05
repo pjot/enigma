@@ -23,12 +23,6 @@ var TileTypes = {
         return count;
     }
 };
-var NextTileType = {};
-NextTileType[TileTypes.FLOOR] = TileTypes.WALL;
-NextTileType[TileTypes.WALL] = TileTypes.HOLE;
-NextTileType[TileTypes.HOLE] = TileTypes.COIN;
-NextTileType[TileTypes.COIN] = TileTypes.PLAYER;
-NextTileType[TileTypes.PLAYER] = TileTypes.FLOOR;
 
 /**
  * Image caching object.
@@ -93,7 +87,7 @@ var Tile = function (x, y, type) {
 };
 
 Tile.prototype.toggle = function () {
-    this.type = NextTileType[this.type];
+    this.type = window.game.tileSelection;
     t = new Tile(this.x, this.y, TileTypes.FLOOR);
     t.draw();
     this.draw();
@@ -120,16 +114,33 @@ Tile.prototype.draw = function () {
     window.game.canvas.drawImage(image, start_x, start_y);
 };
 
+Tile.prototype.drawFrame = function () {
+    var start_x = this.x * window.game.TILE_SIZE,
+        start_y = this.y * window.game.TILE_SIZE + window.game.TOP_OFFSET,
+        canvas = window.game.canvas;
+    window.game.drawMap(window.game.tiles);
+    window.game.player.draw();
+    canvas.fillStyle = 'rgba(255, 125, 0, 0.5)';
+    canvas.fillRect(start_x, start_y, window.game.TILE_SIZE, window.game.TILE_SIZE);
+    tile = new Tile(this.x, this.y, window.game.tileSelection);
+    canvas.globalAlpha = 0.5;
+    tile.draw();
+    canvas.globalAlpha = 1;
+};
+
 /**
  * Main game object. Keeps track of everything.
  * @constructor
  */
-var Enigma = function (canvasElement) {
+var Enigma = function (canvasElement, tileContainer) {
     this.TILE_SIZE = 20;
     this.TOP_OFFSET = 0;
+    this.PADDING = 4;
     this.canvasElement = canvasElement;
+    this.tileContainer = tileContainer;
     this.tiles = [];
     this.tileCount = {};
+    this.mouseDown = false;
 };
 
 /**
@@ -138,6 +149,9 @@ var Enigma = function (canvasElement) {
 Enigma.prototype.init = function () {
     // Calculate game constants
     this.canvasElement.onclick = Enigma.onClickListener;
+    this.canvasElement.onmousemove = Enigma.onMouseMoveListener;
+    this.canvasElement.onmousedown = Enigma.onMouseDownListener;
+    this.canvasElement.onmouseup = Enigma.onMouseUpListener;
     this.canvas = this.canvasElement.getContext('2d');
     this.HEIGHT = this.canvasElement.attributes.height.value;
     this.WIDTH = this.canvasElement.attributes.width.value;
@@ -145,6 +159,23 @@ Enigma.prototype.init = function () {
         x : this.WIDTH / this.TILE_SIZE,
         y : (this.HEIGHT - this.TOP_OFFSET) / this.TILE_SIZE
     };
+    for (i in this.tileContainer.children)
+    {
+        var child = this.tileContainer.children[i];
+        child.onclick = Enigma.tileClickListener;
+    }
+    this.setTileSelection();
+};
+
+Enigma.prototype.setTileSelection = function () {
+    for (i in this.tileContainer.children)
+    {
+        var child = this.tileContainer.children[i];
+        if (child.className == 'img-polaroid')
+        {
+            this.tileSelection = child.getAttribute('rel');
+        }
+    }
 };
 
 /**
@@ -273,6 +304,44 @@ Enigma.onClickListener = function (e) {
     tile.toggle();
 };
 
+Enigma.onMouseDownListener = function (e) {
+    var event = e || window.event;
+    window.game.mouseDown = true;
+};
+
+Enigma.onMouseUpListener = function (e) {
+    var event = e || window.event;
+    window.game.mouseDown = false;
+};
+
+Enigma.onMouseMoveListener = function (e) {
+    var event = e || window.event,
+        tile = window.game.getTileAt(
+            Math.floor(event.offsetX / window.game.TILE_SIZE),
+            Math.floor((event.offsetY - window.game.TOP_OFFSET) / window.game.TILE_SIZE)
+        );
+    if (tile !== false)
+    {
+        tile.drawFrame();
+        if (window.game.mouseDown)
+        {
+            tile.toggle();
+        }
+    }
+};
+
+Enigma.tileClickListener = function (e) {
+    var event = e || window.event,
+        element = event.target,
+        siblings = element.parentElement.children;
+    for (i in siblings)
+    {
+        siblings[i].className = '';
+    }
+    element.className = 'img-polaroid';
+    window.game.setTileSelection();
+};
+
 Enigma.prototype.makeEmptyLevel = function () {
     var tiles = [];
     // Put a floor tile on all remaining tiles
@@ -307,5 +376,8 @@ Enigma.prototype.start = function () {
 /**
  * Start the game
  */
-window.game = new Enigma(document.getElementById('game'));
+window.game = new Enigma(
+    document.getElementById('game'),
+    document.getElementById('tile_selection')
+);
 window.game.start();
