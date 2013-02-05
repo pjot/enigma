@@ -288,7 +288,7 @@ Enigma.prototype.serializeMap = function () {
         id : document.getElementById('id').value
     };
     $.post('admin.php?action=save', postData, function (data) {
-        alert('Saved.');
+        $('#save_modal').modal();
     });
 };
 
