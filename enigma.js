@@ -89,6 +89,7 @@ window.requestFrame = (function () {
  * Image caching object.
  */
 var ImageCache = {
+    image : null,
     /**
      * Array of the images to cache.
      */
@@ -164,8 +165,16 @@ var Tile = function (x, y, type) {
     // Type
     this.type = type;
     this.currentAnimation = 1;
+    this.changed = true;
 };
 
+Tile.prototype.setType = function (type) {
+    if (type !== this.type)
+    {
+        this.changed = true;
+    }
+    this.type = type;
+};
 /**
  * Moves the tile (according to the set dx and dy).
  */
@@ -176,7 +185,7 @@ Tile.prototype.move = function () {
     {
         case TileTypes.COIN:
             window.game.score++;
-            thisTile.type = TileTypes.FLOOR;
+            thisTile.setType(TileTypes.FLOOR);
             if (window.game.remainingCoins() == 0)
             {
                 window.game.won();
@@ -203,6 +212,7 @@ Tile.prototype.move = function () {
     // Move
     this.x += this.dx;
     this.y += this.dy;
+    thisTile.changed = true;
     window.game.registerMove();
 };
 
@@ -238,20 +248,24 @@ Tile.prototype.isAnimated = function () {
  */
 Tile.prototype.draw = function () {
     var start_x = this.x * window.game.TILE_SIZE,
-        start_y = this.y * window.game.TILE_SIZE + window.game.TOP_OFFSET,
-        image;
+        start_y = this.y * window.game.TILE_SIZE + window.game.TOP_OFFSET;
+    if ( ! this.changed)
+    {
+        return;
+    }
     if (this.isAnimated())
     {
-        image = ImageCache.getImage(TileTypes.FLOOR);
-        window.game.canvas.drawImage(image, start_x, start_y);
-        image = ImageCache.getImage(this.type + '_' + this.currentAnimation);
-        window.game.canvas.drawImage(image, start_x, start_y);
+        ImageCache.image = ImageCache.getImage(TileTypes.FLOOR);
+        window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
+        ImageCache.image = ImageCache.getImage(this.type + '_' + this.currentAnimation);
+        window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
     }
     else
     {
-        image = ImageCache.getImage(this.type);
-        window.game.canvas.drawImage(image, start_x, start_y);
+        ImageCache.image = ImageCache.getImage(this.type);
+        window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
     }
+    this.changed = false;
 };
 
 /**
@@ -313,6 +327,7 @@ Enigma.prototype.animationLoop = function () {
             {
                 tile.currentAnimation = 1;
             }
+            tile.changed = true;
         }
     }
     setTimeout(function () { window.game.animationLoop(); }, 1000 / 24);
@@ -379,9 +394,11 @@ Enigma.prototype.drawMap = function (tiles) {
     for (tile in tiles)
     {
         var thisTile = tiles[tile],
-            floor = new Tile(thisTile.x, thisTile.y, TileTypes.FLOOR);
-        floor.draw();
-        tiles[tile].draw();
+            type = thisTile.type;
+        thisTile.setType(TileTypes.FLOOR);
+        thisTile.draw();
+        thisTile.setType(type);
+        thisTile.draw();
     }
     this.player.draw();
     this.drawTitleBar();
@@ -395,44 +412,52 @@ Enigma.prototype.drawTitleBar = function () {
         x = 0,
         totalCoins = this.totalCoins + '',
         currentLevel = this.currentLevel + '',
-        currentMoves = this.moves + '';
+        currentMoves = this.moves + '',
+        tile = new Tile(0, -1, TileTypes.TITLEBAR);
     // Draw background
     for (i = 0; i < this.tileCount.x; i++)
     {
-        t = new Tile(i, -1, TileTypes.TITLEBAR);
-        t.draw();
+        tile.x = i;
+        tile.setType(TileTypes.TITLEBAR);
+        tile.changed = true;
+        tile.draw();
     }
     // Draw current level
     for (letter in currentLevel)
     {
-        t = new Tile(x, -1, currentLevel[letter]);
-        t.draw();
         x++;
+        tile.x = x;
+        tile.setType(currentLevel[letter]);
+        tile.draw();
     }
     // Draw current score
     for (letter in score)
     {
         x++;
-        t = new Tile(x, -1, score[letter]);
-        t.draw();
+        tile.x = x;
+        tile.setType(score[letter]);
+        tile.draw();
     }
     x++;
-    t = new Tile(x, -1, TileTypes.SLASH);
-    t.draw();
+    tile.x = x;
+    tile.setType(TileTypes.SLASH);
+    tile.draw();
     // Draw target score
     for (letter in totalCoins)
     {
         x++;
-        t = new Tile(x, -1, totalCoins[letter]);
-        t.draw();
+        tile.x = x;
+        tile.setType(totalCoins[letter]);
+        tile.draw();
     }
     x = this.tileCount.x;
     movesReverse = currentMoves.split('').reverse().join('');
     for (letter in movesReverse)
     {
         x--;
-        t = new Tile(x, -1, movesReverse[letter]);
-        t.draw();
+        tile.x = x;
+        tile.setType(movesReverse[letter]);
+        tile.draw();
     }
 };
 
@@ -527,6 +552,7 @@ Enigma.prototype.checkForMove = function () {
     if (this.state == GameStates.MOVING)
     {
         this.player.move(); 
+        this.player.changed = true;
     }
 };
 
