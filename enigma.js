@@ -508,7 +508,7 @@ Enigma.keyDownListener = function (e) {
         {
             Enigma.currentKey = MovementKeys[key];
             window.game.handleInput();
-            break;
+            return;
         }
     }
 };
@@ -600,7 +600,6 @@ Enigma.prototype.start = function () {
     if (window.game.state !== GameStates.LOADING)
     {
         window.game.checkForMove();
-        window.game.handleInput();
         window.game.drawMap(window.game.tiles);
     }
 };
