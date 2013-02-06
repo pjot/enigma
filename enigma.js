@@ -425,10 +425,11 @@ Enigma.prototype.drawTitleBar = function () {
     // Draw current level
     for (letter in currentLevel)
     {
-        x++;
         tile.x = x;
         tile.setType(currentLevel[letter]);
+        tile.changed = true;
         tile.draw();
+        x++;
     }
     // Draw current score
     for (letter in score)
@@ -436,11 +437,13 @@ Enigma.prototype.drawTitleBar = function () {
         x++;
         tile.x = x;
         tile.setType(score[letter]);
+        tile.changed = true;
         tile.draw();
     }
     x++;
     tile.x = x;
     tile.setType(TileTypes.SLASH);
+    tile.changed = true;
     tile.draw();
     // Draw target score
     for (letter in totalCoins)
@@ -448,6 +451,7 @@ Enigma.prototype.drawTitleBar = function () {
         x++;
         tile.x = x;
         tile.setType(totalCoins[letter]);
+        tile.changed = true;
         tile.draw();
     }
     x = this.tileCount.x;
@@ -457,6 +461,7 @@ Enigma.prototype.drawTitleBar = function () {
         x--;
         tile.x = x;
         tile.setType(movesReverse[letter]);
+        tile.changed = true;
         tile.draw();
     }
 };
