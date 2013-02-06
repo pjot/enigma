@@ -349,6 +349,7 @@ Enigma.prototype.won = function () {
 
 Enigma.prototype.ajaxLoadLevel = function (level_id) {
     var url = 'ajax.php?level=' + level_id;
+    this.state = GameStates.LOADING;
     $.getJSON(url, function (data) {
         window.game.loadLevel(data);
         window.game.drawMap(window.game.tiles);
@@ -362,6 +363,7 @@ Enigma.prototype.ajaxLoadLevel = function (level_id) {
 Enigma.prototype.loadLevel = function (level) {
     this.score = 0;
     this.moves = 0;
+    Enigma.currentKey = MovementKeys.NONE;
     this.currentLevel = level.name;
     this.parseLevel(level.tiles);
     this.player = new Tile(
@@ -491,21 +493,6 @@ Enigma.prototype.remainingCoins = function () {
 };
 
 /**
- * Static listener for keyUp event.
- */
-Enigma.keyUpListener = function (e) {
-    event = e || window.event;
-    for (key in MovementKeys)
-    {
-        if (event.keyCode == MovementKeys[key])
-        {
-            Enigma.currentKey = MovementKeys.NONE;
-            break;
-        }
-    }
-};
-
-/**
  * Static listener for keyDown event.
  */
 Enigma.keyDownListener = function (e) {
@@ -520,6 +507,7 @@ Enigma.keyDownListener = function (e) {
         if (event.keyCode == MovementKeys[key] && event.keyCode != Enigma.currentKey)
         {
             Enigma.currentKey = MovementKeys[key];
+            window.game.handleInput();
             break;
         }
     }
@@ -597,7 +585,6 @@ Enigma.prototype.start = function () {
     ImageCache.preFetch(function () {
         window.game.init();
         document.onkeydown = Enigma.keyDownListener;
-        document.onkeyup = Enigma.keyUpListener;
     });
     this.gameLoop(+new Date());
 };
