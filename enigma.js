@@ -20,6 +20,12 @@ var TileTypes = {
     HOLE    : 'hole',
     PLAYER  : 'player',
     COIN    : 'coin',
+    COIN_1  : 'coin_1',
+    COIN_2  : 'coin_2',
+    COIN_3  : 'coin_3',
+    COIN_4  : 'coin_4',
+    COIN_5  : 'coin_5',
+    COIN_6  : 'coin_6',
     // Titlebar tiles
     ONE     : '1',
     TWO     : '2',
@@ -46,6 +52,16 @@ var TileTypes = {
             }
         }
         return count;
+    },
+    isAnimated : function (type) {
+        return type === TileTypes.COIN;
+    },
+    getAnimationCount : function (type) {
+        switch (type)
+        {
+            case TileTypes.COIN:
+                return 6;
+        }
     }
 };
 
@@ -82,6 +98,12 @@ var ImageCache = {
         TileTypes.HOLE,
         TileTypes.WALL,
         TileTypes.COIN,
+        TileTypes.COIN_1,
+        TileTypes.COIN_2,
+        TileTypes.COIN_3,
+        TileTypes.COIN_4,
+        TileTypes.COIN_5,
+        TileTypes.COIN_6,
         TileTypes.ONE,
         TileTypes.TWO,
         TileTypes.THREE,
@@ -141,6 +163,7 @@ var Tile = function (x, y, type) {
     this.y = y;
     // Type
     this.type = type;
+    this.currentAnimation = 1;
 };
 
 /**
@@ -206,14 +229,29 @@ Tile.prototype.setDirection = function (direction) {
     }
 };
 
+Tile.prototype.isAnimated = function () {
+    return TileTypes.isAnimated(this.type);
+};
+
 /**
  * Draws the tile on the canvas.
  */
 Tile.prototype.draw = function () {
     var start_x = this.x * window.game.TILE_SIZE,
         start_y = this.y * window.game.TILE_SIZE + window.game.TOP_OFFSET,
+        image;
+    if (this.isAnimated())
+    {
+        image = ImageCache.getImage(TileTypes.FLOOR);
+        window.game.canvas.drawImage(image, start_x, start_y);
+        image = ImageCache.getImage(this.type + '_' + this.currentAnimation);
+        window.game.canvas.drawImage(image, start_x, start_y);
+    }
+    else
+    {
         image = ImageCache.getImage(this.type);
-    window.game.canvas.drawImage(image, start_x, start_y);
+        window.game.canvas.drawImage(image, start_x, start_y);
+    }
 };
 
 /**
@@ -241,6 +279,7 @@ var Enigma = function (canvasElement) {
     this.timestamp = 0;
     this.moves = 0;
     this.hasMoved = false;
+    this.animationTimer;
 };
 
 /**
@@ -257,6 +296,26 @@ Enigma.prototype.init = function () {
     };
     // Setup the game
     this.ajaxLoadLevel(1);
+    this.animationLoop();
+};
+
+Enigma.prototype.animationLoop = function () {
+    for (i in window.game.tiles)
+    {
+        var tile = window.game.tiles[i];
+        if (tile.isAnimated())
+        {
+            if (TileTypes.getAnimationCount(tile.type) > tile.currentAnimation)
+            {
+                tile.currentAnimation++;
+            }
+            else
+            {
+                tile.currentAnimation = 1;
+            }
+        }
+    }
+    setTimeout(function () { window.game.animationLoop(); }, 1000 / 24);
 };
 
 Enigma.prototype.won = function () {

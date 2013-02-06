@@ -1,11 +1,20 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Enigma</title>
+        <link href="/enigma/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    </head>
     <body>
-        <canvas id="game" height="420" width="600"></canvas>
-        <br />
-        FPS: <span id="fps"></span>
-        <script type="text/javascript" src="jquery.min.js"></script>
+        <div class="container">
+            <div class="well" style="margin-top: 10px;">
+                <div style="width: 600px; margin-left: auto; margin-right: auto;">
+                    <canvas id="game" height="420" width="600" class="img-polaroid" style="margin-left: auto; margin-right: auto;"></canvas>
+                    FPS: <span id="fps"></span>
+                </div>
+            </div>
+        </div>
+        <script src="jquery.min.js"></script>
+        <script src="/enigma/bootstrap/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="enigma.js"></script>
     </body>
 </html>
