@@ -205,6 +205,7 @@ Tile.prototype.move = function () {
     {
         this.dx = 0;
         this.dy = 0;
+        this.changed = true;
         window.game.state = GameStates.WAITING;
         return;
     }
@@ -212,6 +213,7 @@ Tile.prototype.move = function () {
     // Move
     this.x += this.dx;
     this.y += this.dy;
+    this.changed = true;
     thisTile.changed = true;
     window.game.registerMove();
 };
@@ -258,6 +260,13 @@ Tile.prototype.draw = function () {
         ImageCache.image = ImageCache.getImage(TileTypes.FLOOR);
         window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
         ImageCache.image = ImageCache.getImage(this.type + '_' + this.currentAnimation);
+        window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
+    }
+    else if (this.is(TileTypes.PLAYER))
+    {
+        ImageCache.image = ImageCache.getImage(TileTypes.FLOOR);
+        window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
+        ImageCache.image = ImageCache.getImage(this.type);
         window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
     }
     else
@@ -557,7 +566,6 @@ Enigma.prototype.checkForMove = function () {
     if (this.state == GameStates.MOVING)
     {
         this.player.move(); 
-        this.player.changed = true;
     }
 };
 
