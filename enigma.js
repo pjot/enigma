@@ -14,19 +14,6 @@ var ActionKeys = {
 };
 
 var TileTypes = {
-    // Game tiles
-    FLOOR   : 'floor',
-    WALL    : 'wall',
-    HOLE    : 'hole',
-    PLAYER  : 'player',
-    COIN    : 'coin',
-    COIN_1  : 'coin_1',
-    COIN_2  : 'coin_2',
-    COIN_3  : 'coin_3',
-    COIN_4  : 'coin_4',
-    COIN_5  : 'coin_5',
-    COIN_6  : 'coin_6',
-    // Titlebar tiles
     ONE     : '1',
     TWO     : '2',
     THREE   : '3',
@@ -36,23 +23,20 @@ var TileTypes = {
     SEVEN   : '7',
     EIGHT   : '8',
     NINE    : '9',
-    ZERO    : '0',
+    COIN    : 'coin',
+    COIN_1  : 'coin_1',
+    COIN_2  : 'coin_2',
+    COIN_3  : 'coin_3',
+    COIN_4  : 'coin_4',
+    COIN_5  : 'coin_5',
+    COIN_6  : 'coin_6',
+    FLOOR   : 'floor',
+    HOLE    : 'hole',
+    PLAYER  : 'player',
     SLASH   : 'slash',
     TITLEBAR: 'titlebar',
-    /**
-     * Static method to get number of used tiles for prefetching.
-     */
-    getCount : function () {
-        var count = 0;
-        for (item in TileTypes)
-        {
-            if (TileTypes.hasOwnProperty(item) && typeof TileTypes[item] == 'string')
-            {
-                count++;
-            }
-        }
-        return count;
-    },
+    WALL    : 'wall',
+    ZERO    : '0',
     isAnimated : function (type) {
         return type === TileTypes.COIN;
     },
@@ -90,67 +74,29 @@ window.requestFrame = (function () {
  */
 var ImageCache = {
     image : null,
-    /**
-     * Array of the images to cache.
-     */
-    images : [
-        TileTypes.PLAYER,
-        TileTypes.FLOOR,
-        TileTypes.HOLE,
-        TileTypes.WALL,
-        TileTypes.COIN,
-        TileTypes.COIN_1,
-        TileTypes.COIN_2,
-        TileTypes.COIN_3,
-        TileTypes.COIN_4,
-        TileTypes.COIN_5,
-        TileTypes.COIN_6,
-        TileTypes.ONE,
-        TileTypes.TWO,
-        TileTypes.THREE,
-        TileTypes.FOUR,
-        TileTypes.FIVE,
-        TileTypes.SIX,
-        TileTypes.SEVEN,
-        TileTypes.EIGHT,
-        TileTypes.NINE,
-        TileTypes.ZERO,
-        TileTypes.SLASH,
-        TileTypes.TITLEBAR
-    ],
-
-    /**
-     * Method used to keep track of number of loaded images.
-     */
-    collector : function (expectedCount, callback) {
-        var receivedCount = 0;
-        return function () {
-            if (++receivedCount == expectedCount)
-            {
-                callback();
-            }
-        };
-    },
-
+    images : [],
     /**
      * Prefetches all the images.
      */
     preFetch : function (callback) {
-        var update = ImageCache.collector(TileTypes.getCount(), callback);
-        for (image in ImageCache.images)
+        for (t in TileTypes)
         {
-            imageName = ImageCache.images[image];
-            ImageCache[imageName] = new Image();
-            ImageCache[imageName].src = 'images/' + imageName + '.png';
-            ImageCache[imageName].addEventListener('load', update);
+            if (typeof TileTypes[t] == 'string')
+            {
+                ImageCache.images.push(TileTypes[t]);
+            }
         }
+        ImageCache.image = new Image();
+        ImageCache.image.src = 'images/sprite.png';
+        ImageCache.image.addEventListener('load', callback);
     },
-
     /**
-     * Get an image tag for a loaded image.
+     * Draws the cached image of 'type' at (x, y) on the canvas.
      */
-    getImage : function (image) {
-        return ImageCache[image];
+    drawImage : function (canvas, x, y, type) {
+        var tileSize = window.game.TILE_SIZE,
+            sprite_x = ImageCache.images.indexOf(type) * (tileSize + 1);
+        canvas.drawImage(ImageCache.image, sprite_x, 0, tileSize, tileSize, x, y, tileSize, tileSize);
     }
 }
 
@@ -206,6 +152,7 @@ Tile.prototype.move = function () {
         this.dx = 0;
         this.dy = 0;
         this.changed = true;
+        Enigma.currentKey = MovementKeys.NONE;
         window.game.state = GameStates.WAITING;
         return;
     }
@@ -257,22 +204,17 @@ Tile.prototype.draw = function () {
     }
     if (this.isAnimated())
     {
-        ImageCache.image = ImageCache.getImage(TileTypes.FLOOR);
-        window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
-        ImageCache.image = ImageCache.getImage(this.type + '_' + this.currentAnimation);
-        window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
+        ImageCache.drawImage(window.game.canvas, start_x, start_y, TileTypes.FLOOR);
+        ImageCache.drawImage(window.game.canvas, start_x, start_y, this.type + '_' + this.currentAnimation);
     }
     else if (this.is(TileTypes.PLAYER))
     {
-        ImageCache.image = ImageCache.getImage(TileTypes.FLOOR);
-        window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
-        ImageCache.image = ImageCache.getImage(this.type);
-        window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
+        ImageCache.drawImage(window.game.canvas, start_x, start_y, TileTypes.FLOOR);
+        ImageCache.drawImage(window.game.canvas, start_x, start_y, this.type);
     }
     else
     {
-        ImageCache.image = ImageCache.getImage(this.type);
-        window.game.canvas.drawImage(ImageCache.image, start_x, start_y);
+        ImageCache.drawImage(window.game.canvas, start_x, start_y, this.type);
     }
     this.changed = false;
 };
