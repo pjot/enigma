@@ -16,8 +16,16 @@
     <div class="well">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" placeholder="Name" value="{{ level.name }}" />
+
         <label for="number">Number:</label>
         <input type="text" id="number" name="number" placeholder="Number" value="{{ level.number }}" />
+
+        <label for="sprite">Sprite:</label>
+        <select name="sprite" id="sprite">
+            {% for sprite in sprites %}
+                <option value="{{ sprite.value }}"{% if sprite.value == level.sprite %} selected="selected"{% endif %}>{{ sprite.name }}</option>
+            {% endfor %}
+        </select>
 
         <div class="form-actions">
             <button type="button" class="btn btn-primary" onClick="window.game.serializeMap();return false;">Save</button>

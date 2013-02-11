@@ -8,7 +8,17 @@ class Edit extends \Enigma\AdminView
     {
         $template = $this->getTemplate('edit.html');
         return $template->render(array(
-            'level' => $this->data
+            'level' => $this->data,
+            'sprites' => array(
+                array(
+                    'value' => 'sprite',
+                    'name' => 'Ett',
+                ),
+                array(
+                    'value' => 'sprite2',
+                    'name' => 'Två',
+                ),
+            ),
         ));
     }
 }

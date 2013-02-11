@@ -71,6 +71,7 @@ class Admin
         $level->name = $_POST['name'];
         $level->number = $_POST['number'];
         $level->data = $_POST['data'];
+        $level->sprite = $_POST['sprite'];
         $level->save();
         echo $level->toJSON();
         exit;

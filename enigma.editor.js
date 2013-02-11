@@ -285,7 +285,8 @@ Enigma.prototype.serializeMap = function () {
         data : JSON.stringify(level),
         number : document.getElementById('number').value,
         name : document.getElementById('name').value,
-        id : document.getElementById('id').value
+        id : document.getElementById('id').value,
+        sprite : document.getElementById('sprite').value
     };
     $.post('admin.php?action=save', postData, function (data) {
         $('#save_modal').modal();
