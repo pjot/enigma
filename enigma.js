@@ -140,14 +140,19 @@ Tile.prototype.move = function () {
             break;
         case TileTypes.HOLE:
             console.log('Dead!');
-            window.game.state = GameStates.WAITING;
+            window.game.ajaxLoadLevel(window.game.currentLevel, ++window.game.moves);
             return;
     }
     
     var nextTile = window.game.getTileAt(this.x + this.dx, this.y + this.dy);
+    if (nextTile == false)
+    {
+        console.log('Dead!');
+        window.game.ajaxLoadLevel(window.game.currentLevel, window.game.moves);
+        return;
+    }
     // Stop if we hit the wall or the edge of the map
-    // TODO: Make the player die when moving off the map
-    if (nextTile == false || nextTile.is(TileTypes.WALL))
+    if (nextTile.is(TileTypes.WALL))
     {
         this.dx = 0;
         this.dy = 0;
@@ -289,12 +294,12 @@ Enigma.prototype.won = function () {
     this.ajaxLoadLevel(this.currentLevel);
 };
 
-Enigma.prototype.ajaxLoadLevel = function (level_id) {
+Enigma.prototype.ajaxLoadLevel = function (level_id, moves) {
     var url = 'ajax.php?level=' + level_id;
     this.state = GameStates.LOADING;
     $.getJSON(url, function (data) {
         ImageCache.preFetch(data.sprite, function () {
-            window.game.loadLevel(data);
+            window.game.loadLevel(data, moves);
             window.game.drawMap(window.game.tiles);
             window.game.state = GameStates.WAITING;
         });
@@ -304,9 +309,9 @@ Enigma.prototype.ajaxLoadLevel = function (level_id) {
 /**
  * Loads a level into the game.
  */
-Enigma.prototype.loadLevel = function (level) {
+Enigma.prototype.loadLevel = function (level, moves) {
     this.score = 0;
-    this.moves = 0;
+    this.moves = moves || 0;
     Enigma.currentKey = MovementKeys.NONE;
     this.currentLevel = level.name;
     this.parseLevel(level.tiles);
