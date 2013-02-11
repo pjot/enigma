@@ -18,7 +18,8 @@ class Level extends Model
         'id',
         'data',
         'name',
-        'number'
+        'number',
+        'sprite'
     );
 
     public function toJSON()
@@ -27,7 +28,8 @@ class Level extends Model
         return json_encode(array(
             'name' => (int) $this->number,
             'player' => $json_data->player,
-            'tiles' => $json_data->tiles
+            'tiles' => $json_data->tiles,
+            'sprite' => $this->sprite
         ));
     }
 }

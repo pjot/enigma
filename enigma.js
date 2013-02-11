@@ -78,7 +78,7 @@ var ImageCache = {
     /**
      * Prefetches all the images.
      */
-    preFetch : function (callback) {
+    preFetch : function (file, callback) {
         for (t in TileTypes)
         {
             if (typeof TileTypes[t] == 'string')
@@ -87,7 +87,7 @@ var ImageCache = {
             }
         }
         ImageCache.image = new Image();
-        ImageCache.image.src = 'images/sprite.png';
+        ImageCache.image.src = 'images/' + file + '.png';
         ImageCache.image.addEventListener('load', callback);
     },
     /**
@@ -293,9 +293,11 @@ Enigma.prototype.ajaxLoadLevel = function (level_id) {
     var url = 'ajax.php?level=' + level_id;
     this.state = GameStates.LOADING;
     $.getJSON(url, function (data) {
-        window.game.loadLevel(data);
-        window.game.drawMap(window.game.tiles);
-        window.game.state = GameStates.WAITING;
+        ImageCache.preFetch(data.sprite, function () {
+            window.game.loadLevel(data);
+            window.game.drawMap(window.game.tiles);
+            window.game.state = GameStates.WAITING;
+        });
     });
 };
 
@@ -524,10 +526,8 @@ Enigma.prototype.handleInput = function () {
  */
 Enigma.prototype.start = function () {
     this.timestamp = + new Date();
-    ImageCache.preFetch(function () {
-        window.game.init();
-        document.onkeydown = Enigma.keyDownListener;
-    });
+    document.onkeydown = Enigma.keyDownListener;
+    this.init();
     this.gameLoop(+new Date());
 };
 
