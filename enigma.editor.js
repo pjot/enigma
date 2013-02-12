@@ -8,6 +8,8 @@ var TileTypes = {
     HOLE    : 'hole',
     PLAYER  : 'player',
     COIN    : 'coin',
+    BOUNCE_R: 'bounce_r',
+    BOUNCE_L: 'bounce_l',
     /**
      * Static method to get number of used tiles for prefetching.
      */
@@ -37,6 +39,8 @@ var ImageCache = {
         TileTypes.HOLE,
         TileTypes.WALL,
         TileTypes.COIN,
+        TileTypes.BOUNCE_L,
+        TileTypes.BOUNCE_R,
     ],
 
     /**
@@ -264,7 +268,13 @@ Enigma.prototype.loadLevel = function (level) {
  * Serializes map so it can be sent to the server
  */
 Enigma.prototype.serializeMap = function () {
-    var types = [TileTypes.WALL, TileTypes.COIN, TileTypes.HOLE],
+    var types = [
+            TileTypes.WALL, 
+            TileTypes.COIN, 
+            TileTypes.HOLE, 
+            TileTypes.BOUNCE_L, 
+            TileTypes.BOUNCE_R
+        ],
         level = {};
     level.player = [this.player.x, this.player.y];
     level.tiles = {};

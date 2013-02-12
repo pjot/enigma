@@ -23,6 +23,8 @@ var TileTypes = {
     SEVEN   : '7',
     EIGHT   : '8',
     NINE    : '9',
+    BOUNCE_L: 'bounce_l',
+    BOUNCE_R: 'bounce_r',
     COIN    : 'coin',
     COIN_1  : 'coin_1',
     COIN_2  : 'coin_2',
@@ -142,6 +144,30 @@ Tile.prototype.move = function () {
             console.log('Dead!');
             window.game.ajaxLoadLevel(window.game.currentLevel, ++window.game.moves);
             return;
+        case TileTypes.BOUNCE_R:
+            if (this.dx == 0)
+            {
+                this.dx = - this.dy;
+                this.dy = 0;
+            }
+            else
+            {
+                this.dy = - this.dx;
+                this.dx = 0;
+            }
+            break;
+        case TileTypes.BOUNCE_L:
+            if (this.dx == 0)
+            {
+                this.dx = this.dy;
+                this.dy = 0;
+            }
+            else
+            {
+                this.dy = this.dx;
+                this.dx = 0;
+            }
+            break;
     }
     
     var nextTile = window.game.getTileAt(this.x + this.dx, this.y + this.dy);
